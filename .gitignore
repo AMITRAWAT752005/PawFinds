@@ -55,6 +55,9 @@ jspm_packages/
 *.swp
 *.swo
 
+# Python virtual environment (not needed for Node.js project)
+.venv/
+
 # OS generated files
 .DS_Store
 .DS_Store?
