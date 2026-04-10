@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 
 const PetCards = (props) => {
@@ -8,6 +8,51 @@ const PetCards = (props) => {
   const [showDeletedSuccess, setshowDeletedSuccess] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
+  const [adoptionLikelihood, setAdoptionLikelihood] = useState(null);
+
+  useEffect(() => {
+    // Fetch adoption likelihood when component mounts
+    fetchAdoptionLikelihood();
+  }, [props.pet]);
+
+  const fetchAdoptionLikelihood = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: props.pet.type,
+          breed: props.pet.breed || 'Other',
+          AgeMonths: convertAgeToMonths(props.pet.age),
+          status: props.pet.status
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAdoptionLikelihood(data.likelihood_percentage / 100 || null);
+      }
+    } catch (error) {
+      console.warn('Could not fetch adoption likelihood:', error);
+    }
+  };
+
+  const convertAgeToMonths = (ageString) => {
+    const match = ageString.match(/(\d+)/);
+    if (!match) return 12;
+    
+    const number = parseInt(match[1]);
+    if (ageString.toLowerCase().includes('year')) {
+      return number * 12;
+    } else if (ageString.toLowerCase().includes('month')) {
+      return number;
+    } else if (ageString.toLowerCase().includes('week')) {
+      return number * 4;
+    }
+    return number;
+  };
 
   const truncateText = (text, maxLength) => {
     if (text.length <= maxLength) {
@@ -92,8 +137,12 @@ const PetCards = (props) => {
         <div className='pet-card-details'>
           <h2>{props.pet.name}</h2>
           <p><b>Type:</b> {props.pet.type}</p>
+          <p><b>Breed:</b> {props.pet.breed || 'Not specified'}</p>
           <p><b>Age:</b> {props.pet.age}</p>
           <p><b>Location:</b> {props.pet.area}</p>
+          {adoptionLikelihood !== null && (
+            <p><b>Adoption Likelihood:</b> <span style={{color: '#27ae60', fontWeight: 'bold'}}>{Math.round(adoptionLikelihood * 100)}%</span></p>
+          )}
           <p><b>Owner Email:</b> {props.pet.email}</p>
           <p><b>Owner Phone:</b> {props.pet.phone}</p>
           <p>

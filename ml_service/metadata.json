@@ -1,0 +1,66 @@
+{
+  "model_type": "RandomForestClassifier",
+  "scaler_type": "StandardScaler",
+  "features": [
+    "type",
+    "breed",
+    "AgeMonths",
+    "status"
+  ],
+  "numeric_cols": [
+    "AgeMonths"
+  ],
+  "categorical_cols": [
+    "type",
+    "breed",
+    "status"
+  ],
+  "label_encoders": {
+    "type": [
+      "Bird",
+      "Cat",
+      "Dog",
+      "Fish",
+      "Rabbit"
+    ],
+    "breed": [
+      "Angelfish",
+      "Beagle",
+      "Bengal",
+      "Betta",
+      "Budgerigar",
+      "Bulldog",
+      "Cockatiel",
+      "German Shepherd",
+      "Golden Retriever",
+      "Goldfish",
+      "Guppy",
+      "Labrador Retriever",
+      "Lionhead",
+      "Lovebird",
+      "Maine Coon",
+      "Mini Rex",
+      "Netherland Dwarf",
+      "Parrot",
+      "Persian",
+      "Pug",
+      "Ragdoll",
+      "Siamese",
+      "Tetra"
+    ],
+    "status": [
+      "Adopted",
+      "Donated",
+      "Pending",
+      "Rejected"
+    ]
+  },
+  "training_accuracy": 1.0,
+  "test_accuracy": 1.0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1_score": 1.0,
+  "n_samples": 50,
+  "n_features": 4,
+  "version": "2.0_trained"
+}

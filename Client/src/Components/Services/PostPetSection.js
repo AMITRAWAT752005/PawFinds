@@ -13,6 +13,7 @@ const PostPetSection = () => {
   const [ageError, setAgeError] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [type, setType] = useState("None");
+  const [breed, setBreed] = useState("None");
   const [picture, setPicture] = useState(null);
   const [fileName, setFileName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false); 
@@ -54,6 +55,7 @@ const PostPetSection = () => {
       !phone ||
       !fileName ||
       type === "None" ||
+      breed === "None" ||
       ageError
     ) {
       setFormError(true);
@@ -75,6 +77,7 @@ const PostPetSection = () => {
     formData.append("email", email);
     formData.append("phone", phone);
     formData.append("type", type);
+    formData.append("breed", breed);
 
     if (picture) {
       formData.append("picture", picture);
@@ -100,6 +103,8 @@ const PostPetSection = () => {
       setJustification("");
       setEmail("");
       setPhone("");
+      setType("None");
+      setBreed("None");
       setPicture(null);
       setFileName("");
       togglePopup();
@@ -171,6 +176,23 @@ const PostPetSection = () => {
             <option value="Rabbit">Rabbit</option>
             <option value="Bird">Bird</option>
             <option value="Fish">Fish</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div className="filter-selection-service">
+          <label>Breed:</label>
+          <select
+            value={breed}
+            onChange={(event) => setBreed(event.target.value)}
+          >
+            <option value="None">None</option>
+            <option value="Beagle">Beagle</option>
+            <option value="Bengal">Bengal</option>
+            <option value="Angelfish">Angelfish</option>
+            <option value="Betta">Betta</option>
+            <option value="Parrot">Parrot</option>
+            <option value="Lop">Lop</option>
             <option value="Other">Other</option>
           </select>
         </div>

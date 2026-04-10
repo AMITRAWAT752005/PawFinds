@@ -30,6 +30,10 @@ const PetSchema = new schema({
         type: String,
         required: true
     },
+    breed: {
+        type: String,
+        required: true
+    },
     filename: {
         type: String,
         required: true

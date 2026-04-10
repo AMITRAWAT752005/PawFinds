@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: pawfinds-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: pawfinds
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pawfinds-network
+
+  # ML Microservice (FastAPI)
+  ml-service:
+    build:
+      context: ./ml_service
+      dockerfile: Dockerfile
+    container_name: pawfinds-ml-service
+    ports:
+      - "8000:8000"
+    environment:
+      MODEL_PATH: /app/adoption_model.pkl
+      PREPROCESSOR_PATH: /app/preprocessor.pkl
+      METADATA_PATH: /app/metadata.json
+      MODEL_VERSION: "v1.0"
+    volumes:
+      - ./ml_service:/app
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - mongodb
+    networks:
+      - pawfinds-network
+    restart: unless-stopped
+
+  # Node Backend (Express)
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: pawfinds-backend
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      dburl: mongodb://admin:password123@mongodb:27017/pawfinds?authSource=admin
+      PREDICTOR_URL: http://ml-service:8000/predict
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - pawfinds-network
+    restart: unless-stopped
+
+  # React Frontend (served by dev server)
+  frontend:
+    build:
+      context: ./Client
+      dockerfile: Dockerfile
+    container_name: pawfinds-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:4000
+      REACT_APP_ML_SERVICE_URL: http://localhost:8000
+    volumes:
+      - ./Client/src:/app/src
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - pawfinds-network
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+  mongodb_config:
+
+networks:
+  pawfinds-network:
+    driver: bridge
