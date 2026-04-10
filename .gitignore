@@ -1,3 +1,9 @@
+# macOS system files
+.DS_Store
+.DS_Store?
+*.swp
+*.swo
+
 # Dependencies
 node_modules/
 npm-debug.log*
