@@ -8,8 +8,8 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-changeme}
       MONGO_INITDB_DATABASE: pawfinds
     volumes:
       - mongodb_data:/data/db
@@ -55,7 +55,7 @@ services:
     environment:
       NODE_ENV: development
       PORT: 4000
-      dburl: mongodb://admin:password123@mongodb:27017/pawfinds?authSource=admin
+      dburl: mongodb://${MONGO_INITDB_ROOT_USERNAME:-admin}:${MONGO_INITDB_ROOT_PASSWORD:-changeme}@mongodb:27017/pawfinds?authSource=admin
       PREDICTOR_URL: http://ml-service:8000/predict
     volumes:
       - ./server:/app

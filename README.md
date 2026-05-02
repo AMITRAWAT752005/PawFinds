@@ -147,7 +147,7 @@ Ensure you have the following installed:
 
 3. **Create Database User**:
    - Go to "Database Access" → "Add New User"
-   - Username: `admin` | Password: `your_password`
+   - Username: `<username>` | Password: `<password>`
    - Click "Add User"
 
 4. **Network Access**:
@@ -159,7 +159,7 @@ Ensure you have the following installed:
    - Click "Database" → "Connect" → "Drivers"
    - Copy the connection string:
    ```
-   mongodb+srv://admin:your_password@cluster0.xxxxxx.mongodb.net/?appName=Cluster0
+   mongodb+srv://<username>:<password>@cluster0.xxxxxx.mongodb.net/?appName=Cluster0
    ```
 
 #### Option B: Local MongoDB
