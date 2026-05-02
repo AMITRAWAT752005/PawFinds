@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import AdoptedCards from './AdoptedCards';
+import { useAuthContext } from '../../hooks/UseAuthContext';
 
 const AdoptedHistory = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuthContext();
 
   const fetchAdoptedPets = async () => {
     try {
-      const response = await fetch('http://localhost:4000/adoptedPets');
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/adoptedPets`, {
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        }
+      });
       if (!response.ok) {
         throw new Error('An error occurred while fetching adopted pets');
       }
@@ -22,7 +28,7 @@ const AdoptedHistory = () => {
 
   useEffect(() => {
     fetchAdoptedPets();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className='pet-container'>

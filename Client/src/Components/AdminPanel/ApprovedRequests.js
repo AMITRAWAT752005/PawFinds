@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import PetCards from './PetCards'
+import { useAuthContext } from '../../hooks/UseAuthContext';
 
 const ApprovedRequests = () => {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
+  const { user } = useAuthContext();
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch('http://localhost:4000/approvedPets')
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/approvedPets`, {
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        }
+      })
       if (!response.ok) {
         throw new Error('An error occurred')
       }
@@ -21,9 +27,8 @@ const ApprovedRequests = () => {
   }
 
   useEffect(() => {
-
     fetchRequests()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className='pet-container'>

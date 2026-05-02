@@ -25,7 +25,7 @@ const PetsViewer = (props) => {
       <div className='pet-card-pic'>
         {!imageBroken ? (
           <img 
-            src={`http://localhost:4000/images/${props.pet.filename}`} 
+            src={`${process.env.REACT_APP_API_URL}/images/${props.pet.filename}`} 
             alt={props.pet.name}
             onError={handleImageError}
           />

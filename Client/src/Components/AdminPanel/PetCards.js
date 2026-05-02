@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { useAuthContext } from '../../hooks/UseAuthContext';
 
 const PetCards = (props) => {
   const [showJustificationPopup, setShowJustificationPopup] = useState(false);
@@ -9,50 +10,51 @@ const PetCards = (props) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [adoptionLikelihood, setAdoptionLikelihood] = useState(null);
+  const { user } = useAuthContext();
 
   useEffect(() => {
+    const convertAgeToMonths = (ageString) => {
+      const match = ageString.match(/(\d+)/);
+      if (!match) return 12;
+      
+      const number = parseInt(match[1]);
+      if (ageString.toLowerCase().includes('year')) {
+        return number * 12;
+      } else if (ageString.toLowerCase().includes('month')) {
+        return number;
+      } else if (ageString.toLowerCase().includes('week')) {
+        return number * 4;
+      }
+      return number;
+    };
+
+    const fetchAdoptionLikelihood = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/predict', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            type: props.pet.type,
+            breed: props.pet.breed || 'Other',
+            AgeMonths: convertAgeToMonths(props.pet.age),
+            status: props.pet.status
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setAdoptionLikelihood(data.likelihood_percentage / 100 || null);
+        }
+      } catch (error) {
+        console.warn('Could not fetch adoption likelihood:', error);
+      }
+    };
+
     // Fetch adoption likelihood when component mounts
     fetchAdoptionLikelihood();
   }, [props.pet]);
-
-  const fetchAdoptionLikelihood = async () => {
-    try {
-      const response = await fetch('http://localhost:8000/predict', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          type: props.pet.type,
-          breed: props.pet.breed || 'Other',
-          AgeMonths: convertAgeToMonths(props.pet.age),
-          status: props.pet.status
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setAdoptionLikelihood(data.likelihood_percentage / 100 || null);
-      }
-    } catch (error) {
-      console.warn('Could not fetch adoption likelihood:', error);
-    }
-  };
-
-  const convertAgeToMonths = (ageString) => {
-    const match = ageString.match(/(\d+)/);
-    if (!match) return 12;
-    
-    const number = parseInt(match[1]);
-    if (ageString.toLowerCase().includes('year')) {
-      return number * 12;
-    } else if (ageString.toLowerCase().includes('month')) {
-      return number;
-    } else if (ageString.toLowerCase().includes('week')) {
-      return number * 4;
-    }
-    return number;
-  };
 
   const truncateText = (text, maxLength) => {
     if (text.length <= maxLength) {
@@ -71,13 +73,14 @@ const PetCards = (props) => {
   const handleApprove = async () => {
     setIsApproving(true);
     try {
-      const response = await fetch(`http://localhost:4000/approving/${props.pet._id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/approving/${props.pet._id}`, {
         method: 'PUT',
         body: JSON.stringify({
           status: "Approved"
         }),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.token}`
         }
       })
 
@@ -96,8 +99,11 @@ const PetCards = (props) => {
   const deleteFormsAdoptedPet = async () => {
     setIsDeleting(true)
     try {
-      const deleteResponses = await fetch(`http://localhost:4000/form/delete/many/${props.pet._id}`, {
-        method: 'DELETE'
+      const deleteResponses = await fetch(`${process.env.REACT_APP_API_URL}/form/delete/many/${props.pet._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        }
       });
       if (!deleteResponses.ok) {
         throw new Error('Failed to delete forms');
@@ -110,8 +116,11 @@ const PetCards = (props) => {
 
   const handleReject = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/delete/${props.pet._id}`, {
-        method: 'DELETE'
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/delete/${props.pet._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        }
       })
 
       if (!response.ok) {
@@ -132,7 +141,7 @@ const PetCards = (props) => {
     <div className='req-containter'>
       <div className='pet-view-card'>
         <div className='pet-card-pic'>
-          <img src={`http://localhost:4000/images/${props.pet.filename}`} alt={props.pet.name} />
+          <img src={`${process.env.REACT_APP_API_URL}/images/${props.pet.filename}`} alt={props.pet.name} />
         </div>
         <div className='pet-card-details'>
           <h2>{props.pet.name}</h2>

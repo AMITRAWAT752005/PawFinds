@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import postPet from "./images/postPet.png";
+import { useAuthContext } from "../../hooks/UseAuthContext";
 
 const PostPetSection = () => {
-  const [name, setName] = useState("");
+  const { user } = useAuthContext()
+  const [name, setName] = useState(user ? user.userName : "");
   const [age, setAge] = useState("");
   const [area, setArea] = useState("");
   const [justification, setJustification] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(user ? user.email : "");
   const [phone, setPhone] = useState("");
   const [formError, setFormError] = useState(false);
   const [emailError, setEmailError] = useState(false);
@@ -84,8 +86,11 @@ const PostPetSection = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:4000/services", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/services`, {
         method: "POST",
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        },
         body: formData,
       });
 
